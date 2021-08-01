@@ -7,9 +7,9 @@ import numpy as np
 n = 96
 z = np.zeros((128,128), dtype=np.int32)
 a = z.copy()
-a[:n, :n] = np.random.randint(-4000, 4000, size=(n,n))
+a[:n, :n] = np.random.randint(-1000, 1000, size=(n,n))
 b = z.copy()
-b[:n, :n] = np.random.randint(-4000, 4000, size=(n,n))
+b[:n, :n] = np.random.randint(-1000, 1000, size=(n,n))
 c = a @ b
 print(a)
 print(b)
@@ -43,9 +43,3 @@ with open("matrix.out", "w") as f:
     for row in c:
         for col in row:
             printHex(f, col)
-with open("matrix.bin", "wb") as f:
-    a.tofile(f)
-    b.tofile(f)
-    z.tofile(f)
-    c.tofile(f)
-

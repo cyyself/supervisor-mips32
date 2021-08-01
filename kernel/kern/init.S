@@ -111,9 +111,29 @@ bss_init_done:
     ori t1, zero, %lo(COM_IER_RDI)
     sb t1, %lo(COM_IER)(t0)         // :67
 #else
-    lui t0, %hi(SerialStat)
-    ori t1, zero, 0x10
-    sb t1, %lo(SerialStat)(t0)      // 串口可读中断
+    ##initial COM in loongson-fpga
+	li	t0, 0xbfe40000  #COM1_BASE_ADDR:0xbfe40000
+1:
+	        #FIFO_ENABLE|FIFO_RCV_RST|FIFO_XMT_RST|FIFO_TRIGGER_1
+	li	t1, 0x1|0x2|0x4|0x0 
+	sb	t1, 2(t0)   #FIFO
+    ########
+    ##set baud rate
+    ########
+	li	t1, 0x80    #CFCR_DLAB, divisor latch
+	sb	t1, 3(t0)   #CFCR
+ 	//li	t1, 33000000HZ/(16*CONS_BAUD)
+	li	t1, 0x23    #modify Baut 57600
+	sb	t1, 0(t0)   #DATA
+	srl	t1, 8
+	sb	t1, 1(t0)   #IER
+   
+	li	t1, 0x3     #CFCR_8BITS
+	sb	t1, 3(t0)   #CFCR
+	li	t1, 0x1|0x2 #MCR_DTR|MCR_RTS 
+	sb	t1, 4(t0)   #MCR
+	li	t1, 0x1     #IRxE
+	sb	t1, 1(t0)   #IER
 #endif
 
 #ifdef ENABLE_INT

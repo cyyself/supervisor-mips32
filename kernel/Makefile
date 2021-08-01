@@ -19,7 +19,7 @@ OBJ	:= $(patsubst $(SRCDIR)/%.S, $(OBJDIR)/%.o, $(SRC))
 TARGET	:= kernel.elf
 ASFLAG	:= -D__ASSEMBLY__ -EL -g -mips32r2 -mno-abicalls -mno-shared
 
-override ON_FPGA ?= n
+override ON_FPGA ?= y
 
 ifeq ($(ON_FPGA), y)
 	MACH_DEF = -DMACH_FPGA
@@ -28,7 +28,7 @@ else
 endif
 ASFLAG += $(MACH_DEF)
 
-override EN_INT ?= n
+override EN_INT ?= y
 ifeq ($(EN_INT), y)
 	ASFLAG += -DENABLE_INT
 	EN_TLB = n
@@ -63,6 +63,7 @@ $(OBJDIR):
 
 kernel.bin: $(TARGET)
 	@$(GCCPREFIX)objcopy -j .text -O binary -v $< kernel.bin
+	@$(GCCPREFIX)objdump -lD $< > kernel.s
 
 show-utest: $(TARGET)
 	@$(GCCPREFIX)objdump -D $< | grep "^[0-9a-f]\{8\} <UTEST_" | grep -n --color=auto 'UTEST_'

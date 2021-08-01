@@ -14,7 +14,11 @@ import subprocess
 import sys
 import tempfile
 from timeit import default_timer as timer
-
+try:
+    import serial
+except:
+    print("Please install pyserial")
+    exit(1)
 try:
     import readline
 except:
@@ -148,7 +152,7 @@ def run_A(addr):
             break
         if line == '':
             break
-        elif re.match(r" *(\..+|\w+: *)", line) is not None:
+        elif re.match("\\w+:$", line) is not None:
             # ASM label only
             asm += line + "\n"
             continue
@@ -175,7 +179,25 @@ def run_F(addr, file_name):
         return
     print("reading from file %s" % file_name)
     offset = addr & 0xfffffff
+    prompt_addr = addr
     asm = ".set noreorder\n.set noat\n.org {:#x}\n".format(offset)
+    with open(file_name, "r") as f:
+        for line in f:
+            print('[0x%04x] %s' % (prompt_addr, line.strip()))
+            if line == '':
+                break
+            elif re.match("\\w+:$", line) is not None:
+                # ASM label only
+                asm += line + "\n"
+                continue
+            try:
+                asm += ".word {:#x}\n".format(int(line, 16))
+            except ValueError:
+                instr = multi_line_asm(".set noat\n" + line)
+                if instr == '':
+                    continue
+                asm += line + "\n"
+            prompt_addr = prompt_addr + 4
     binary = multi_line_asm(asm)
     for i in range(offset, len(binary), 4):
         outp.write(b'A')
@@ -293,11 +315,6 @@ def MainLoop():
             print(e)
 
 def InitializeSerial(pipe_path, baudrate):
-    try:
-        import serial
-    except:
-        print("Please install pyserial")
-        exit(1)
     global outp, inp
     tty = serial.Serial(port=pipe_path, baudrate=baudrate)
     tty.reset_input_buffer()

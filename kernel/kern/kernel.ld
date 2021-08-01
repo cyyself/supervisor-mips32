@@ -44,12 +44,18 @@ SECTIONS
     .text : {
         *(.text.init)
         . = 0x1000;
+        _text_ebase_begin = .;
         *(.text.ebase)
         . = 0x1180;
         *(.text.ebase180)
+        _text_ebase_end = .;
         . = ALIGN(0x1000);
+        _text_code_begin = .;
         *(.text)
+        _text_code_end = .;
         . = ALIGN(0x1000); /* "fixed" utest address */
+        _text_test_begin = .;
         *(.text.utest)
+        _text_test_end = .;
     }
 }
